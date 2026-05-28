@@ -1,0 +1,190 @@
+#!/bin/sh
+# ----------------------------------------------------------------------------
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+# Maven Start Up Batch script
+#
+# Required ENV vars:
+# ------------------
+#   JAVA_HOME - location of a JDK home dir
+#
+# Optional ENV vars
+# -----------------
+#   MAVEN_OPTS - parameters passed to the Java VM when running Maven
+#     e.g. to debug Maven itself, use
+#       set MAVEN_OPTS=-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000
+#   MAVEN_SKIP_RC - flag to disable loading of mavenrc files
+# ----------------------------------------------------------------------------
+
+if [ -z "$MAVEN_SKIP_RC" ] ; then
+  if [ -f /usr/local/etc/mavenrc ] ; then
+    . /usr/local/etc/mavenrc
+  fi
+  if [ -f /etc/mavenrc ] ; then
+    . /etc/mavenrc
+  fi
+  if [ -f "$HOME/.mavenrc" ] ; then
+    . "$HOME/.mavenrc"
+  fi
+fi
+
+# OS specific support.  $var _must_ be set to either true or false.
+cygwin=false;
+darwin=false;
+mingw=false
+case "$(uname)" in
+  CYGWIN*) cygwin=true ;;
+  MINGW*) mingw=true;;
+  Darwin*) darwin=true
+           # Use /usr/libexec/java_home if available, otherwise fall through
+           # See https://developer.apple.com/library/mac/qa/qa1170/_index.html
+           if [ -z "$JAVA_HOME" ]; then
+             if [ -x "/usr/libexec/java_home" ]; then
+               export JAVA_HOME="$(/usr/libexec/java_home)"
+             fi
+           fi
+           ;;
+esac
+
+if [ -z "$JAVA_HOME" ] ; then
+  if [ -r /etc/gentoo-release ] ; then
+    JAVA_HOME=$(java-config --jre-home)
+  fi
+fi
+
+# For Cygwin, ensure paths are in UNIX format before anything is touched
+if $cygwin ; then
+  [ -n "$JAVA_HOME" ] &&
+    JAVA_HOME=$(cygpath --unix "$JAVA_HOME")
+  [ -n "$CLASSPATH" ] &&
+    CLASSPATH=$(cygpath --path --unix "$CLASSPATH")
+fi
+
+# For Mingw, ensure paths are in UNIX format before anything is touched
+if $mingw ; then
+  [ -n "$JAVA_HOME" ] &&
+    JAVA_HOME="$(cd "$JAVA_HOME" && pwd)"
+fi
+
+if [ -z "$JAVA_HOME" ]; then
+  javaExecutable="$(which javac)"
+  if [ -n "$javaExecutable" ] && ! [ "$(expr "$javaExecutable" : '\([^ ]*\)')" = "no" ]; then
+    # readlink(1) is not available as standard on Solaris 10.
+    readLink=$(which readlink)
+    if [ ! "$(expr "$readLink" : '\([^ ]*\)')" = "no" ]; then
+      if $darwin ; then
+        javaHome="$(dirname "$javaExecutable")"
+        javaExecutable="$(readlink "$javaExecutable")"
+        while [ -n "$javaExecutable" -a -e "$javaExecutable" ]; do
+          javaHome="$(dirname "$javaExecutable")"
+          javaExecutable="$(readlink "$javaExecutable")"
+        done
+        javaHome="$(cd "$javaHome/.." && pwd)"
+        javaExecutable="$javaHome/bin/javac"
+      else
+        javaExecutable="$(readlink -f "$javaExecutable")"
+        javaHome="$(dirname "$javaExecutable")"
+        javaHome="$(cd "$javaHome/.." && pwd)"
+      fi
+      if [ -z "$JAVA_HOME" ]; then
+        export JAVA_HOME="$javaHome"
+      fi
+    fi
+  fi
+fi
+
+if [ -z "$JAVA_HOME" ]; then
+  echo "Warning! JAVA_HOME environment variable is not set."
+fi
+
+CLASSWORLDS_LAUNCHER=org.codehaus.plexus.classworlds.launcher.Launcher
+
+# traverses directory structure from process work directory to filesystem root,
+# trying to find a particular file.  Needed for the lib/bootstrap.jar case.
+findMavenProjectHome () {
+  wdir="$1"
+  while [ "$wdir" != '/' ] ; do
+    if [ -d "$wdir"/.mvn ] ; then
+      PROJECT_HOME="$wdir"
+      return
+    fi
+    wdir="$(cd "$wdir/.." && pwd)"
+  done
+  PROJECT_HOME="$1"
+}
+
+# Starting from the script location, walk up the filesystem until we find
+# a project with a .mvn directory or we hit the filesystem root.
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+findMavenProjectHome "$SCRIPT_DIR"
+
+MAVEN_PROJECTBASEDIR="$PROJECT_HOME"
+export MAVEN_PROJECTBASEDIR
+
+MAVEN_WRAPPER_JAR="$MAVEN_PROJECTBASEDIR/.mvn/wrapper/maven-wrapper.jar"
+MAVEN_WRAPPER_PROPERTIES="$MAVEN_PROJECTBASEDIR/.mvn/wrapper/maven-wrapper.properties"
+
+if [ -r "$MAVEN_WRAPPER_PROPERTIES" ]; then
+  distributionUrl=$(grep 'distributionUrl' "$MAVEN_WRAPPER_PROPERTIES" | sed 's/distributionUrl=//')
+fi
+
+if [ -r "$MAVEN_WRAPPER_JAR" ]; then
+    if [ "$MVNW_VERBOSE" = true ]; then
+      echo "Found $MAVEN_WRAPPER_JAR"
+    fi
+else
+    if [ "$MVNW_VERBOSE" = true ]; then
+      echo "Couldn't find $MAVEN_WRAPPER_JAR, downloading it ..."
+    fi
+    jarUrl="$(grep 'wrapperUrl' "$MAVEN_WRAPPER_PROPERTIES" | sed 's/wrapperUrl=//')"
+    while IFS="=" read key value; do
+      case "$key" in (wrapperUrl) jarUrl="$value"; break ;;
+      esac
+    done < "$MAVEN_WRAPPER_PROPERTIES"
+    if [ "$MVNW_VERBOSE" = true ]; then
+      echo "Downloading from: $jarUrl"
+    fi
+    wrapperJarParent="$(dirname "$MAVEN_WRAPPER_JAR")"
+    mkdir -p "$wrapperJarParent"
+    if command -v wget > /dev/null; then
+        wget "$jarUrl" -O "$MAVEN_WRAPPER_JAR" 2>/dev/null
+    elif command -v curl > /dev/null; then
+        curl -o "$MAVEN_WRAPPER_JAR" "$jarUrl" 2>/dev/null
+    fi
+fi
+
+MAVEN_OPTS="$(cat "$MAVEN_PROJECTBASEDIR/.mvn/jvm.config" 2>/dev/null) $MAVEN_OPTS"
+
+# For Cygwin, switch paths to Windows format before running java
+if $cygwin; then
+  [ -n "$JAVA_HOME" ] &&
+    JAVA_HOME=$(cygpath --path --windows "$JAVA_HOME")
+  [ -n "$CLASSPATH" ] &&
+    CLASSPATH=$(cygpath --path --windows "$CLASSPATH")
+  [ -n "$MAVEN_PROJECTBASEDIR" ] &&
+    MAVEN_PROJECTBASEDIR=$(cygpath --path --windows "$MAVEN_PROJECTBASEDIR")
+fi
+
+exec "$JAVA_HOME/bin/java" \
+  $MAVEN_OPTS \
+  $MAVEN_DEBUG_OPTS \
+  -classpath "$MAVEN_WRAPPER_JAR" \
+  "-Dmaven.multiModuleProjectDirectory=${MAVEN_PROJECTBASEDIR}" \
+  ${CLASSWORLDS_LAUNCHER} "$@"
