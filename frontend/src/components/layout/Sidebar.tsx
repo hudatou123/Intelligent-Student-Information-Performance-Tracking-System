@@ -80,8 +80,8 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
           </div>
           {!isCollapsed && (
             <div className="min-w-0">
-              <p className="text-sm font-bold text-white truncate">GradeMS</p>
-              <p className="text-xs text-gray-400 truncate">Management System</p>
+              <p className="text-sm font-bold text-white truncate">STS</p>
+              <p className="text-xs text-gray-400 truncate">Student Tracking System</p>
             </div>
           )}
         </div>

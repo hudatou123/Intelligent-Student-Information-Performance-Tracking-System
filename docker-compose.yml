@@ -1,17 +1,17 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: gradems-db
+    container_name: student-tracking-system-db
     environment:
-      POSTGRES_DB: gradems_dev
-      POSTGRES_USER: gradems
-      POSTGRES_PASSWORD: gradems_dev_password
+      POSTGRES_DB: student_tracking_dev
+      POSTGRES_USER: student_tracking
+      POSTGRES_PASSWORD: student_tracking_dev_password
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U gradems -d gradems_dev"]
+      test: ["CMD-SHELL", "pg_isready -U student_tracking -d student_tracking_dev"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -20,12 +20,12 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: gradems-backend
+    container_name: student-tracking-system-backend
     environment:
       SPRING_PROFILES_ACTIVE: dev
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/gradems_dev
-      SPRING_DATASOURCE_USERNAME: gradems
-      SPRING_DATASOURCE_PASSWORD: gradems_dev_password
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/student_tracking_dev
+      SPRING_DATASOURCE_USERNAME: student_tracking
+      SPRING_DATASOURCE_PASSWORD: student_tracking_dev_password
       JWT_SECRET: dev-secret-key-at-least-256-bits-long-for-hmac
     ports:
       - "8080:8080"
@@ -38,7 +38,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: gradems-frontend
+    container_name: student-tracking-system-frontend
     ports:
       - "80:80"
     depends_on:

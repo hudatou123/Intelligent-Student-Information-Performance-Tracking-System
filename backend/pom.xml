@@ -5,11 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.gradems</groupId>
-    <artifactId>grade-management-backend</artifactId>
+    <artifactId>student-tracking-system-backend</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
-    <name>grade-management-backend</name>
-    <description>Grade Management System Backend</description>
+    <name>student-tracking-system-backend</name>
+    <description>Intelligent Student Information &amp; Performance Tracking System Backend</description>
 
     <parent>
         <groupId>org.springframework.boot</groupId>

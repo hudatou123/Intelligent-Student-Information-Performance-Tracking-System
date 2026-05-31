@@ -101,7 +101,7 @@ export default function Dashboard() {
           Welcome back, {user?.fullName ?? 'User'}!
         </h1>
         <p className="text-gray-500 mt-1 text-sm">
-          Here's an overview of the grade management system.
+          Here's an overview of the student tracking system.
         </p>
       </div>
 

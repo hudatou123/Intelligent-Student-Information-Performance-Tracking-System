@@ -62,7 +62,7 @@ export default function Login() {
           <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-600 rounded-2xl mb-4 shadow-lg">
             <Award className="h-8 w-8 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Grade Management</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Student Tracking System</h1>
           <p className="text-gray-500 mt-1 text-sm">Sign in to your account</p>
         </div>
 
@@ -109,7 +109,7 @@ export default function Login() {
 
           <div className="mt-6 pt-5 border-t border-gray-100 text-center">
             <p className="text-xs text-gray-400">
-              Grade Management System &copy; {new Date().getFullYear()}
+              Intelligent Student Information &amp; Performance Tracking System &copy; {new Date().getFullYear()}
             </p>
           </div>
         </div>

@@ -1,4 +1,4 @@
--- V1: Initial schema for Grade Management System
+-- V1: Initial schema for Intelligent Student Information & Performance Tracking System
 
 CREATE TABLE users (
     id         BIGSERIAL PRIMARY KEY,

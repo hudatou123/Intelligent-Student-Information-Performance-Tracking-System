@@ -1,4 +1,4 @@
-# Grade Management System
+# Intelligent Student Information & Performance Tracking System
 
 ![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.x-6DB33F?style=flat&logo=spring-boot&logoColor=white)
 ![React](https://img.shields.io/badge/React-18-61DAFB?style=flat&logo=react&logoColor=black)
@@ -9,7 +9,7 @@
 
 A full-stack academic grade management platform that enables teachers to record and manage student grades, generate reports, and gives students secure access to their own academic records. Built with a production-grade CI/CD pipeline deploying to AWS.
 
-**Live Demo:** [https://gradems.example.com](https://gradems.example.com) _(placeholder — replace with your deployed URL)_
+**Live Demo:** [https://student-tracking-system.example.com](https://student-tracking-system.example.com) _(placeholder — replace with your deployed URL)_
 
 ---
 
@@ -81,8 +81,8 @@ A full-stack academic grade management platform that enables teachers to record 
 ### Run the full stack in one command
 
 ```bash
-git clone https://github.com/your-username/grade-management-system.git
-cd grade-management-system
+git clone https://github.com/your-username/student-tracking-system.git
+cd student-tracking-system
 docker compose up --build
 ```
 
@@ -114,9 +114,9 @@ docker compose down -v
 cd backend
 
 # Requires Java 21 and a running PostgreSQL instance
-export SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/gradems_dev
-export SPRING_DATASOURCE_USERNAME=gradems
-export SPRING_DATASOURCE_PASSWORD=gradems_dev_password
+export SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/student_tracking_dev
+export SPRING_DATASOURCE_USERNAME=student_tracking
+export SPRING_DATASOURCE_PASSWORD=student_tracking_dev_password
 export JWT_SECRET=dev-secret-key-at-least-256-bits-long-for-hmac
 
 ./mvnw spring-boot:run
@@ -270,7 +270,7 @@ Set these in **Settings > Secrets and variables > Actions**:
 
 ## AWS Deployment (Manual First-Time Setup)
 
-1. **ECR** — Create two repositories: `gradems-backend` and `gradems-frontend`.
+1. **ECR** — Create two repositories: `student-tracking-system-backend` and `student-tracking-system-frontend`.
 2. **RDS** — Launch a PostgreSQL 16 instance; note the endpoint and credentials.
 3. **EC2** — Launch an Amazon Linux 2023 instance; install Docker; open port 8080.
 4. **S3** — Create a bucket with static website hosting enabled.
@@ -283,7 +283,7 @@ Set these in **Settings > Secrets and variables > Actions**:
 ## Project Structure
 
 ```
-grade-management-system/
+student-tracking-system/
 ├── .github/
 │   └── workflows/
 │       ├── ci.yml              # Continuous integration

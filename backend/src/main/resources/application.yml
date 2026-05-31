@@ -2,7 +2,7 @@ spring:
   profiles:
     active: dev
   application:
-    name: grade-management-backend
+    name: student-tracking-system-backend
   jpa:
     hibernate:
       ddl-auto: validate

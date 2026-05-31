@@ -15,9 +15,9 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_DB: gradems_test
-          POSTGRES_USER: gradems
-          POSTGRES_PASSWORD: gradems_test_password
+          POSTGRES_DB: student_tracking_test
+          POSTGRES_USER: student_tracking
+          POSTGRES_PASSWORD: student_tracking_test_password
         ports:
           - 5432:5432
         options: >-
@@ -40,9 +40,9 @@ jobs:
         working-directory: ./backend
         run: mvn clean test
         env:
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/gradems_test
-          SPRING_DATASOURCE_USERNAME: gradems
-          SPRING_DATASOURCE_PASSWORD: gradems_test_password
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/student_tracking_test
+          SPRING_DATASOURCE_USERNAME: student_tracking
+          SPRING_DATASOURCE_PASSWORD: student_tracking_test_password
           JWT_SECRET: test-secret-key-256-bits-long-for-testing-only
 
   frontend-build:
@@ -83,7 +83,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build backend Docker image
-        run: docker build -t gradems-backend ./backend
+        run: docker build -t student-tracking-system-backend ./backend
 
       - name: Build frontend Docker image
-        run: docker build -t gradems-frontend ./frontend
+        run: docker build -t student-tracking-system-frontend ./frontend

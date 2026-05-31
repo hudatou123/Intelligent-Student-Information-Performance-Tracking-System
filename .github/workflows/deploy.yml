@@ -30,7 +30,7 @@ jobs:
       - name: Build, tag, and push backend image to ECR
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: gradems-backend
+          ECR_REPOSITORY: student-tracking-system-backend
           IMAGE_TAG: ${{ github.sha }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./backend
@@ -47,11 +47,11 @@ jobs:
           script: |
             aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | \
               docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}
-            docker pull ${{ steps.login-ecr.outputs.registry }}/gradems-backend:latest
-            docker stop gradems-backend || true
-            docker rm gradems-backend || true
+            docker pull ${{ steps.login-ecr.outputs.registry }}/student-tracking-system-backend:latest
+            docker stop student-tracking-system-backend || true
+            docker rm student-tracking-system-backend || true
             docker run -d \
-              --name gradems-backend \
+              --name student-tracking-system-backend \
               --restart always \
               -p 8080:8080 \
               -e SPRING_PROFILES_ACTIVE=prod \
@@ -59,7 +59,7 @@ jobs:
               -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
               -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
               -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
-              ${{ steps.login-ecr.outputs.registry }}/gradems-backend:latest
+              ${{ steps.login-ecr.outputs.registry }}/student-tracking-system-backend:latest
 
       - name: Build and deploy frontend to S3
         env:

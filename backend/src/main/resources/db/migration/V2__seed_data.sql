@@ -13,7 +13,7 @@ INSERT INTO users (username, password, full_name, email, role, enabled)
 VALUES ('admin',
         '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBpwTpqfxkB9Oe',
         'System Administrator',
-        'admin@gradems.com',
+        'admin@student-tracking-system.com',
         'ADMIN',
         TRUE);
 
@@ -22,7 +22,7 @@ INSERT INTO users (username, password, full_name, email, role, enabled)
 VALUES ('teacher_smith',
         '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBpwTpqfxkB9Oe',
         'Dr. John Smith',
-        'j.smith@gradems.com',
+        'j.smith@student-tracking-system.com',
         'TEACHER',
         TRUE);
 
@@ -30,7 +30,7 @@ INSERT INTO users (username, password, full_name, email, role, enabled)
 VALUES ('teacher_johnson',
         '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBpwTpqfxkB9Oe',
         'Prof. Emily Johnson',
-        'e.johnson@gradems.com',
+        'e.johnson@student-tracking-system.com',
         'TEACHER',
         TRUE);
 
@@ -39,7 +39,7 @@ INSERT INTO users (username, password, full_name, email, role, enabled)
 VALUES ('student_alice',
         '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBpwTpqfxkB9Oe',
         'Alice Chen',
-        'alice.chen@student.gradems.com',
+        'alice.chen@student.student-tracking-system.com',
         'STUDENT',
         TRUE);
 
@@ -47,7 +47,7 @@ INSERT INTO users (username, password, full_name, email, role, enabled)
 VALUES ('student_bob',
         '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBpwTpqfxkB9Oe',
         'Bob Martinez',
-        'bob.martinez@student.gradems.com',
+        'bob.martinez@student.student-tracking-system.com',
         'STUDENT',
         TRUE);
 
@@ -55,7 +55,7 @@ INSERT INTO users (username, password, full_name, email, role, enabled)
 VALUES ('student_carol',
         '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBpwTpqfxkB9Oe',
         'Carol White',
-        'carol.white@student.gradems.com',
+        'carol.white@student.student-tracking-system.com',
         'STUDENT',
         TRUE);
 
@@ -63,7 +63,7 @@ INSERT INTO users (username, password, full_name, email, role, enabled)
 VALUES ('student_david',
         '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBpwTpqfxkB9Oe',
         'David Kim',
-        'david.kim@student.gradems.com',
+        'david.kim@student.student-tracking-system.com',
         'STUDENT',
         TRUE);
 
@@ -71,7 +71,7 @@ INSERT INTO users (username, password, full_name, email, role, enabled)
 VALUES ('student_eva',
         '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBpwTpqfxkB9Oe',
         'Eva Torres',
-        'eva.torres@student.gradems.com',
+        'eva.torres@student.student-tracking-system.com',
         'STUDENT',
         TRUE);
 
@@ -101,7 +101,7 @@ INSERT INTO students (student_number, first_name, last_name, email, phone, addre
 VALUES ('STU2024001',
         'Alice',
         'Chen',
-        'alice.chen@student.gradems.com',
+        'alice.chen@student.student-tracking-system.com',
         '555-1001',
         '123 Campus Drive, Boston, MA 02115',
         (SELECT id FROM users WHERE username = 'student_alice'));
@@ -110,7 +110,7 @@ INSERT INTO students (student_number, first_name, last_name, email, phone, addre
 VALUES ('STU2024002',
         'Bob',
         'Martinez',
-        'bob.martinez@student.gradems.com',
+        'bob.martinez@student.student-tracking-system.com',
         '555-1002',
         '456 University Ave, Cambridge, MA 02139',
         (SELECT id FROM users WHERE username = 'student_bob'));
@@ -119,7 +119,7 @@ INSERT INTO students (student_number, first_name, last_name, email, phone, addre
 VALUES ('STU2024003',
         'Carol',
         'White',
-        'carol.white@student.gradems.com',
+        'carol.white@student.student-tracking-system.com',
         '555-1003',
         '789 College St, Somerville, MA 02143',
         (SELECT id FROM users WHERE username = 'student_carol'));
@@ -128,7 +128,7 @@ INSERT INTO students (student_number, first_name, last_name, email, phone, addre
 VALUES ('STU2024004',
         'David',
         'Kim',
-        'david.kim@student.gradems.com',
+        'david.kim@student.student-tracking-system.com',
         '555-1004',
         '321 Scholar Lane, Medford, MA 02155',
         (SELECT id FROM users WHERE username = 'student_david'));
@@ -137,7 +137,7 @@ INSERT INTO students (student_number, first_name, last_name, email, phone, addre
 VALUES ('STU2024005',
         'Eva',
         'Torres',
-        'eva.torres@student.gradems.com',
+        'eva.torres@student.student-tracking-system.com',
         '555-1005',
         '654 Academic Blvd, Brookline, MA 02446',
         (SELECT id FROM users WHERE username = 'student_eva'));

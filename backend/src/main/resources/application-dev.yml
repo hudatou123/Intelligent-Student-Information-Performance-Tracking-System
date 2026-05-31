@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/gradems_dev
-    username: gradems
-    password: gradems_dev_password
+    url: jdbc:postgresql://localhost:5432/student_tracking_dev
+    username: student_tracking
+    password: student_tracking_dev_password
     hikari:
       maximum-pool-size: 5
       minimum-idle: 1
@@ -13,7 +13,7 @@ spring:
 
 logging:
   level:
-    com.gradems: DEBUG
+    com.student_tracking: DEBUG
     org.springframework.security: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE

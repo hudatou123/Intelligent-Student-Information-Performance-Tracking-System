@@ -59,7 +59,7 @@ export function MainLayout() {
             <Menu className="h-5 w-5" />
           </button>
           <div className="ml-3 font-semibold text-gray-900 text-sm">
-            Grade Management System
+            Intelligent Student Information & Performance Tracking System
           </div>
         </header>
 
