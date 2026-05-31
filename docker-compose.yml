@@ -27,6 +27,8 @@ services:
       SPRING_DATASOURCE_USERNAME: student_tracking
       SPRING_DATASOURCE_PASSWORD: student_tracking_dev_password
       JWT_SECRET: dev-secret-key-at-least-256-bits-long-for-hmac
+      # Leave unset to use the placeholder stub; set in your shell/.env to enable live AI.
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     ports:
       - "8080:8080"
     depends_on:
