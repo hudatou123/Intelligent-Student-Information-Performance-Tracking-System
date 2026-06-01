@@ -6,9 +6,9 @@
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=flat&logo=docker&logoColor=white)
 ![AWS](https://img.shields.io/badge/AWS-EC2%20%7C%20S3%20%7C%20ECR-FF9900?style=flat&logo=amazon-aws&logoColor=white)
 ![CI](https://img.shields.io/badge/CI-GitHub_Actions-2088FF?style=flat&logo=github-actions&logoColor=white)
-![AI](https://img.shields.io/badge/AI-LangChain4j%20%7C%20Claude-D97757?style=flat&logo=anthropic&logoColor=white)
+![AI](https://img.shields.io/badge/AI-Spring_AI%20%7C%20Claude-6DB33F?style=flat&logo=spring&logoColor=white)
 
-A full-stack academic platform that enables teachers to record and manage student grades, generate reports, and gives students secure access to their own academic records. It also ships with a conversational AI assistant (LangChain4j + Anthropic Claude) with per-conversation memory. Built with a production-grade CI/CD pipeline deploying to AWS.
+A full-stack academic platform that enables teachers to record and manage student grades, generate reports, and gives students secure access to their own academic records. It also ships with a conversational AI assistant (Spring AI + Anthropic Claude) with per-conversation memory. Built with a production-grade CI/CD pipeline deploying to AWS.
 
 **Live Demo:** [https://student-tracking-system.example.com](https://student-tracking-system.example.com) _(placeholder — replace with your deployed URL)_
 
@@ -66,7 +66,7 @@ A full-stack academic platform that enables teachers to record and manage studen
 | Backend    | Spring Boot 3, Java 21, Maven          |
 | Database   | PostgreSQL 16                          |
 | Auth       | JWT (HMAC-SHA256)                      |
-| AI         | LangChain4j, Anthropic Claude          |
+| AI         | Spring AI, Anthropic Claude            |
 | Container  | Docker, Docker Compose                 |
 | CI/CD      | GitHub Actions                         |
 | Cloud      | AWS EC2, S3, CloudFront, ECR, RDS      |
@@ -207,7 +207,7 @@ Request body: `{ "message": "...", "conversationId": "optional-id" }`. The respo
 ## AI Assistant
 
 The backend ships with a conversational AI assistant (`POST /api/chat`) built on
-[LangChain4j](https://docs.langchain4j.dev/) using the Anthropic Claude model, with
+[Spring AI](https://docs.spring.io/spring-ai/reference/) using the Anthropic Claude model, with
 per-conversation chat memory.
 
 It runs in one of two modes, selected automatically by whether a valid API key is present:
@@ -225,6 +225,19 @@ docker compose up --build -d
 
 Get a key from the [Anthropic Console](https://console.anthropic.com) — this is separate from a
 Claude.ai subscription. Never commit your real key; `.env` is git-ignored.
+
+### Framework Choice: Spring AI vs LangChain4j
+
+The assistant uses **Spring AI** (the official Spring project, 1.0.0 GA) rather than LangChain4j.
+For a Spring Boot codebase, Spring AI integrates natively — auto-configured `ChatClient`/`ChatModel`
+beans, standard `spring.ai.*` properties, a first-class `VectorStore` abstraction (`PgVectorStore`)
+for the planned RAG work, and `Advisor`-based chat memory and retrieval — keeping the whole stack on
+one coherent, well-supported ecosystem.
+
+LangChain4j was evaluated first and is equally capable; the original LangChain4j implementation of
+this feature is preserved on the [`phase1-langchain4j`](../../tree/phase1-langchain4j) branch for
+comparison. The framework is isolated behind a small `AiChatClient` interface, so swapping providers
+touches a single implementation class.
 
 ---
 

@@ -1,62 +1,45 @@
 package com.gradems.config;
 
-import com.gradems.service.Assistant;
-import dev.langchain4j.memory.chat.ChatMemoryProvider;
-import dev.langchain4j.memory.chat.MessageWindowChatMemory;
-import dev.langchain4j.model.anthropic.AnthropicChatModel;
-import dev.langchain4j.model.chat.ChatLanguageModel;
-import dev.langchain4j.service.AiServices;
-import lombok.RequiredArgsConstructor;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Wires the LangChain4j building blocks: the Anthropic chat model, a per-conversation memory
- * provider, and the {@link Assistant} AI service.
+ * Wires the Spring AI building blocks: a windowed {@link ChatMemory} and a {@link ChatClient}
+ * preconfigured with a default system prompt and a memory advisor.
  *
- * <p>The model bean is constructed even with a placeholder API key — no network call happens
- * until the assistant is actually invoked, and {@code ChatService} short-circuits placeholder
- * keys, so the application starts cleanly without real credentials.
+ * <p>The underlying Anthropic {@code ChatModel} and {@code ChatClient.Builder} are
+ * auto-configured by {@code spring-ai-starter-model-anthropic} from the {@code spring.ai.anthropic.*}
+ * properties. No network call happens at construction time, and {@code ChatService} only invokes
+ * the model when a real API key is configured.
  */
 @Configuration
-@EnableConfigurationProperties(AiProperties.class)
-@RequiredArgsConstructor
 public class AiConfig {
 
     private static final int MAX_MEMORY_MESSAGES = 20;
 
-    /**
-     * Non-blank dummy key used only so the model can be constructed when no real key is set.
-     * The builder rejects a blank key, but never makes a network call at construction time —
-     * and {@code ChatService} short-circuits before invoking the model in placeholder mode.
-     */
-    private static final String DUMMY_API_KEY = "sk-ant-not-configured-placeholder";
-
-    private final AiProperties properties;
+    private static final String SYSTEM_PROMPT = """
+            You are a helpful assistant embedded in the Intelligent Student Information &
+            Performance Tracking System. You help teachers, students, and administrators with
+            questions about students, courses, and academic performance. Be concise and clear.
+            If you do not yet have access to specific data, say so plainly.
+            """;
 
     @Bean
-    public ChatLanguageModel chatLanguageModel() {
-        AiProperties.Anthropic anthropic = properties.anthropic();
-        String apiKey = properties.hasRealApiKey() ? anthropic.apiKey() : DUMMY_API_KEY;
-        return AnthropicChatModel.builder()
-                .apiKey(apiKey)
-                .modelName(anthropic.modelName())
-                .temperature(anthropic.temperature())
-                .maxTokens(anthropic.maxTokens())
+    public ChatMemory chatMemory() {
+        return MessageWindowChatMemory.builder()
+                .maxMessages(MAX_MEMORY_MESSAGES)
                 .build();
     }
 
     @Bean
-    public ChatMemoryProvider chatMemoryProvider() {
-        return memoryId -> MessageWindowChatMemory.withMaxMessages(MAX_MEMORY_MESSAGES);
-    }
-
-    @Bean
-    public Assistant assistant(ChatLanguageModel chatLanguageModel, ChatMemoryProvider chatMemoryProvider) {
-        return AiServices.builder(Assistant.class)
-                .chatLanguageModel(chatLanguageModel)
-                .chatMemoryProvider(chatMemoryProvider)
+    public ChatClient chatClient(ChatClient.Builder builder, ChatMemory chatMemory) {
+        return builder
+                .defaultSystem(SYSTEM_PROMPT)
+                .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
                 .build();
     }
 }
