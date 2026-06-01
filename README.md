@@ -6,8 +6,9 @@
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=flat&logo=docker&logoColor=white)
 ![AWS](https://img.shields.io/badge/AWS-EC2%20%7C%20S3%20%7C%20ECR-FF9900?style=flat&logo=amazon-aws&logoColor=white)
 ![CI](https://img.shields.io/badge/CI-GitHub_Actions-2088FF?style=flat&logo=github-actions&logoColor=white)
+![AI](https://img.shields.io/badge/AI-LangChain4j%20%7C%20Claude-D97757?style=flat&logo=anthropic&logoColor=white)
 
-A full-stack academic grade management platform that enables teachers to record and manage student grades, generate reports, and gives students secure access to their own academic records. Built with a production-grade CI/CD pipeline deploying to AWS.
+A full-stack academic platform that enables teachers to record and manage student grades, generate reports, and gives students secure access to their own academic records. It also ships with a conversational AI assistant (LangChain4j + Anthropic Claude) with per-conversation memory. Built with a production-grade CI/CD pipeline deploying to AWS.
 
 **Live Demo:** [https://student-tracking-system.example.com](https://student-tracking-system.example.com) _(placeholder — replace with your deployed URL)_
 
@@ -65,6 +66,7 @@ A full-stack academic grade management platform that enables teachers to record 
 | Backend    | Spring Boot 3, Java 21, Maven          |
 | Database   | PostgreSQL 16                          |
 | Auth       | JWT (HMAC-SHA256)                      |
+| AI         | LangChain4j, Anthropic Claude          |
 | Container  | Docker, Docker Compose                 |
 | CI/CD      | GitHub Actions                         |
 | Cloud      | AWS EC2, S3, CloudFront, ECR, RDS      |
@@ -118,6 +120,9 @@ export SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/student_tracking_d
 export SPRING_DATASOURCE_USERNAME=student_tracking
 export SPRING_DATASOURCE_PASSWORD=student_tracking_dev_password
 export JWT_SECRET=dev-secret-key-at-least-256-bits-long-for-hmac
+
+# Optional: enable the AI assistant (omit to use the placeholder stub)
+export ANTHROPIC_API_KEY=sk-ant-your-key
 
 ./mvnw spring-boot:run
 # API available at http://localhost:8080
@@ -188,6 +193,39 @@ cd backend
 | GET    | `/api/grades/my`          | Student views own grades     | Student       |
 | GET    | `/api/grades/summary`     | Aggregate stats by course    | Teacher/Admin |
 
+### AI Assistant
+
+| Method | Endpoint     | Description                                                  | Access        |
+|--------|--------------|--------------------------------------------------------------|---------------|
+| POST   | `/api/chat`  | Send a message to the AI assistant (per-conversation memory) | Authenticated |
+
+Request body: `{ "message": "...", "conversationId": "optional-id" }`. The response returns a
+`conversationId`; pass it back on the next request to keep the conversation's context.
+
+---
+
+## AI Assistant
+
+The backend ships with a conversational AI assistant (`POST /api/chat`) built on
+[LangChain4j](https://docs.langchain4j.dev/) using the Anthropic Claude model, with
+per-conversation chat memory.
+
+It runs in one of two modes, selected automatically by whether a valid API key is present:
+
+- **Placeholder mode (default):** with no real key configured, `/api/chat` returns a canned
+  stub response, so the feature can be exercised end-to-end without any credentials.
+- **Live mode:** set `ANTHROPIC_API_KEY` to a real key (starting with `sk-ant-`) and restart —
+  the assistant then calls Claude. No code changes are required.
+
+```bash
+# Enable live mode locally
+echo "ANTHROPIC_API_KEY=sk-ant-your-key" >> .env
+docker compose up --build -d
+```
+
+Get a key from the [Anthropic Console](https://console.anthropic.com) — this is separate from a
+Claude.ai subscription. Never commit your real key; `.env` is git-ignored.
+
 ---
 
 ## Environment Variables
@@ -200,6 +238,8 @@ Copy `.env.example` to `.env` and fill in real values before deploying.
 | `DB_USERNAME`              | PostgreSQL username                           | Yes       |
 | `DB_PASSWORD`              | PostgreSQL password                           | Yes       |
 | `JWT_SECRET`               | HMAC secret, minimum 256 bits                 | Yes       |
+| `ANTHROPIC_API_KEY`        | Anthropic key (`sk-ant-...`) for the AI assistant; blank = placeholder stub | No |
+| `ANTHROPIC_MODEL`          | Claude model id (default `claude-haiku-4-5-20251001`) | No |
 | `AWS_REGION`               | AWS region (e.g. `us-east-1`)                 | Yes (AWS) |
 | `AWS_ACCESS_KEY_ID`        | AWS access key for CLI operations             | Yes (AWS) |
 | `AWS_SECRET_ACCESS_KEY`    | AWS secret access key                         | Yes (AWS) |
