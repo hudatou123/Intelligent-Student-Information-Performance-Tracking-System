@@ -16,60 +16,134 @@ A full-stack academic platform that enables teachers to record and manage studen
 
 ## Architecture
 
-```
-                        ┌─────────────────────────────────────┐
-                        │            AWS Cloud                │
-                        │                                     │
-   Users (Browser)      │  ┌──────────────┐                  │
-         │              │  │  CloudFront  │                  │
-         │ HTTPS        │  │     CDN      │                  │
-         └─────────────►│  └──────┬───────┘                  │
-                        │         │                           │
-                        │  ┌──────▼───────┐                  │
-                        │  │   S3 Bucket  │  React SPA       │
-                        │  │  (Frontend)  │  (static assets) │
-                        │  └─────────────-┘                  │
-                        │                                     │
-         API calls      │  ┌──────────────┐                  │
-         ───────────────►  │   EC2 Instance│                  │
-         (port 8080)    │  │  Spring Boot  │                  │
-                        │  │   (Docker)   │                  │
-                        │  └──────┬───────┘                  │
-                        │         │ JDBC                      │
-                        │  ┌──────▼───────┐                  │
-                        │  │  Amazon RDS  │                  │
-                        │  │ PostgreSQL 16│                  │
-                        │  └─────────────-┘                  │
-                        │                                     │
-                        │  ┌──────────────┐                  │
-                        │  │  Amazon ECR  │  Docker images   │
-                        │  └─────────────-┘                  │
-                        └─────────────────────────────────────┘
+### Project structure
 
-  Local Development:
-  ┌──────────────────────────────────────────────┐
-  │  docker-compose.yml                          │
-  │  ┌───────────┐  ┌───────────┐  ┌──────────┐ │
-  │  │ Nginx:80  │  │Spring:8080│  │ PG:5432  │ │
-  │  │ (React)   │  │ (Backend) │  │(Database)│ │
-  │  └───────────┘  └───────────┘  └──────────┘ │
-  └──────────────────────────────────────────────┘
+```
+student-tracking-system/
+├── .github/
+│   └── workflows/
+│       ├── ci.yml                    # Continuous integration
+│       └── deploy.yml                # AWS deployment
+├── backend/                          # Spring Boot 3.4 / Java 21 API
+│   ├── src/
+│   │   ├── main/
+│   │   │   ├── java/com/gradems/
+│   │   │   │   ├── controller/       # REST controllers (Auth, Student, Teacher, Grade, Chat)
+│   │   │   │   ├── service/          # Business logic + AiChatClient / SpringAiChatClient
+│   │   │   │   ├── repository/       # Spring Data JPA repositories
+│   │   │   │   ├── entity/           # JPA entities
+│   │   │   │   ├── dto/              # Request / response DTOs
+│   │   │   │   ├── config/           # Security, Spring AI, OpenAPI config
+│   │   │   │   ├── security/         # JWT filter & helpers
+│   │   │   │   └── exception/        # Global exception handling
+│   │   │   └── resources/
+│   │   │       ├── application.yml   # (+ application-dev.yml / application-prod.yml)
+│   │   │       └── db/migration/     # Flyway SQL migrations (V1__init, V2__seed, ...)
+│   │   └── test/                     # JUnit / Spring Security tests
+│   ├── Dockerfile
+│   └── pom.xml
+├── frontend/                         # React 18 + TypeScript SPA
+│   ├── src/
+│   │   ├── pages/
+│   │   ├── components/
+│   │   ├── api/                      # Axios API clients
+│   │   ├── store/                    # Zustand state
+│   │   ├── router/
+│   │   ├── lib/
+│   │   ├── types/
+│   │   └── main.tsx
+│   ├── Dockerfile
+│   ├── nginx.conf
+│   └── vite.config.ts
+├── docker-compose.yml                # Local development stack
+├── docker-compose.prod.yml           # Production overrides
+├── .env.example                      # Environment variable template
+└── README.md
+```
+
+### Backend request flow (layered Spring Boot)
+
+```
+  HTTP request
+      │
+      ▼
+  Spring Security filter chain  ──  JwtAuthenticationFilter (stateless JWT)
+      │                             + @PreAuthorize method-level RBAC
+      ▼
+  Controller  ──  Auth / Student / Teacher / Grade / Chat
+      │
+      ▼
+  Service  ──  business logic, DTO mapping, validation
+      │                                   │
+      ▼                                   ▼
+  Repository (Spring Data JPA)     ChatService ─► AiChatClient (interface)
+      │                                   └─ SpringAiChatClient
+      ▼                                        └─ Spring AI ChatClient
+  PostgreSQL 16  (Flyway-managed schema)            ├─ MessageWindowChatMemory (per conversationId)
+                                                    └─ Anthropic Claude Messages API
+```
+
+### Local development (Docker Compose)
+
+```
+  docker-compose.yml
+  ┌───────────────────────────────────────────────┐
+  │  ┌───────────┐  ┌────────────┐  ┌───────────┐  │
+  │  │ Nginx:80  │  │ Spring:8080│  │  PG:5432  │  │
+  │  │ (React)   │  │ (Backend)  │  │(Database) │  │
+  │  └───────────┘  └────────────┘  └───────────┘  │
+  └───────────────────────────────────────────────┘
+```
+
+### Deployment topology (AWS)
+
+```
+                    ┌─────────────────────────┐
+                    │        Browser          │
+                    │  React 18 + TypeScript  │
+                    └───────────┬─────────────┘
+                                │
+          ┌─────────────────────┴──────────────────────┐
+          │ 1) load SPA (HTTPS)      2) REST /api/** (HTTPS + JWT)
+          ▼                                             ▼
+   ╔═══════════════════════ AWS Cloud ═══════════════════════════════╗
+   ║                                                                  ║
+   ║   ┌────────────┐     ┌────────────┐     ┌───────────────────┐    ║
+   ║   │ CloudFront │────►│ S3 Bucket  │     │   EC2  (Docker)   │    ║
+   ║   │   (CDN)    │     │  SPA build │     │  Spring Boot API  │    ║
+   ║   └────────────┘     └────────────┘     │       :8080       │    ║
+   ║                                         └────┬─────────┬────┘    ║
+   ║   ┌────────────┐                             │ JDBC    │         ║
+   ║   │ Amazon ECR │  Docker image registry      ▼         │         ║
+   ║   │            │                    ┌────────────────┐ │         ║
+   ║   └────────────┘                    │  Amazon RDS    │ │         ║
+   ║                                     │ PostgreSQL 16  │ │         ║
+   ║                                     └────────────────┘ │         ║
+   ╚═══════════════════════════════════════════════════════│═════════╝
+                                                            │ HTTPS (Spring AI)
+                                                            ▼
+                                                ┌───────────────────────┐
+                                                │  Anthropic Claude API │
+                                                │  external LLM service │
+                                                │  (claude-haiku-4-5)   │
+                                                └───────────────────────┘
 ```
 
 ---
 
 ## Tech Stack
 
-| Layer      | Technology                             |
-|------------|----------------------------------------|
-| Frontend   | React 18, Vite, Nginx                  |
-| Backend    | Spring Boot 3, Java 21, Maven          |
-| Database   | PostgreSQL 16                          |
-| Auth       | JWT (HMAC-SHA256)                      |
-| AI         | Spring AI, Anthropic Claude            |
-| Container  | Docker, Docker Compose                 |
-| CI/CD      | GitHub Actions                         |
-| Cloud      | AWS EC2, S3, CloudFront, ECR, RDS      |
+| Layer      | Technology                                                            |
+|------------|-----------------------------------------------------------------------|
+| Frontend   | React 18, TypeScript, Vite, Tailwind CSS, React Query, Zustand, Nginx |
+| Backend    | Spring Boot 3.4, Java 21, Maven                                       |
+| Database   | PostgreSQL 16, Spring Data JPA / Hibernate, Flyway migrations         |
+| Auth       | Spring Security, JWT (JJWT, HMAC-SHA256), BCrypt, role-based access    |
+| API Docs   | SpringDoc OpenAPI (Swagger UI)                                        |
+| AI         | Spring AI 1.0, Anthropic Claude (`claude-haiku-4-5`)                  |
+| Container  | Docker, Docker Compose                                                |
+| CI/CD      | GitHub Actions                                                        |
+| Cloud      | AWS EC2, S3, CloudFront, ECR, RDS                                     |
 
 ---
 
@@ -152,46 +226,52 @@ cd backend
 
 ## API Endpoints
 
+Interactive docs are served by SpringDoc OpenAPI at `/swagger-ui.html` (spec at `/api-docs`).
+All endpoints are stateless; protected routes require a `Authorization: Bearer <JWT>` header.
+"Authenticated" below means any signed-in role (Admin / Teacher / Student).
+
 ### Authentication
 
-| Method | Endpoint             | Description              | Access  |
-|--------|----------------------|--------------------------|---------|
-| POST   | `/api/auth/register` | Register a new account   | Public  |
-| POST   | `/api/auth/login`    | Login and receive JWT    | Public  |
-| POST   | `/api/auth/refresh`  | Refresh access token     | Public  |
+| Method | Endpoint             | Description                              | Access  |
+|--------|----------------------|------------------------------------------|---------|
+| POST   | `/api/auth/login`    | Login, receive access + refresh JWT      | Public  |
+| POST   | `/api/auth/refresh`  | Exchange a refresh token for a new access token | Public  |
+| POST   | `/api/auth/register` | Register a new account                   | Admin   |
 
 ### Students
 
-| Method | Endpoint                    | Description                  | Access        |
-|--------|-----------------------------|------------------------------|---------------|
-| GET    | `/api/students`             | List all students            | Teacher/Admin |
-| GET    | `/api/students/{id}`        | Get student by ID            | Teacher/Admin |
-| POST   | `/api/students`             | Create a new student         | Admin         |
-| PUT    | `/api/students/{id}`        | Update student info          | Admin         |
-| DELETE | `/api/students/{id}`        | Remove a student             | Admin         |
-| GET    | `/api/students/{id}/grades` | Get a student's grade report | Teacher/Admin |
+| Method | Endpoint                | Description                     | Access        |
+|--------|-------------------------|---------------------------------|---------------|
+| GET    | `/api/students`         | List students (paginated)       | Authenticated |
+| GET    | `/api/students/{id}`    | Get student by ID               | Authenticated |
+| GET    | `/api/students/count`   | Total student count             | Authenticated |
+| POST   | `/api/students`         | Create a new student            | Admin         |
+| PUT    | `/api/students/{id}`    | Update student info             | Admin         |
+| DELETE | `/api/students/{id}`    | Remove a student                | Admin         |
 
 ### Teachers
 
-| Method | Endpoint              | Description           | Access  |
-|--------|-----------------------|-----------------------|---------|
-| GET    | `/api/teachers`       | List all teachers     | Admin   |
-| GET    | `/api/teachers/{id}`  | Get teacher by ID     | Admin   |
-| POST   | `/api/teachers`       | Create a new teacher  | Admin   |
-| PUT    | `/api/teachers/{id}`  | Update teacher info   | Admin   |
-| DELETE | `/api/teachers/{id}`  | Remove a teacher      | Admin   |
+| Method | Endpoint                | Description                     | Access        |
+|--------|-------------------------|---------------------------------|---------------|
+| GET    | `/api/teachers`         | List teachers (paginated)       | Authenticated |
+| GET    | `/api/teachers/{id}`    | Get teacher by ID               | Authenticated |
+| GET    | `/api/teachers/count`   | Total teacher count             | Authenticated |
+| POST   | `/api/teachers`         | Create a new teacher            | Admin         |
+| PUT    | `/api/teachers/{id}`    | Update teacher info             | Admin         |
+| DELETE | `/api/teachers/{id}`    | Remove a teacher                | Admin         |
 
 ### Grades
 
-| Method | Endpoint                  | Description                  | Access        |
-|--------|---------------------------|------------------------------|---------------|
-| GET    | `/api/grades`             | List grades (filterable)     | Teacher/Admin |
-| GET    | `/api/grades/{id}`        | Get a single grade entry     | Teacher/Admin |
-| POST   | `/api/grades`             | Record a new grade           | Teacher       |
-| PUT    | `/api/grades/{id}`        | Update a grade               | Teacher       |
-| DELETE | `/api/grades/{id}`        | Delete a grade entry         | Teacher/Admin |
-| GET    | `/api/grades/my`          | Student views own grades     | Student       |
-| GET    | `/api/grades/summary`     | Aggregate stats by course    | Teacher/Admin |
+| Method | Endpoint                          | Description                              | Access        |
+|--------|-----------------------------------|------------------------------------------|---------------|
+| GET    | `/api/grades`                     | List grades (paginated)                  | Authenticated |
+| GET    | `/api/grades/{id}`                | Get a single grade entry                 | Authenticated |
+| POST   | `/api/grades`                     | Record a new grade                       | Teacher/Admin |
+| PUT    | `/api/grades/{id}`                | Update a grade                           | Teacher/Admin |
+| DELETE | `/api/grades/{id}`                | Delete a grade entry                     | Admin         |
+| GET    | `/api/grades/student/{studentId}` | Grades for a specific student (paginated)| Authenticated |
+| GET    | `/api/grades/stats/student/{id}`  | Student average score + grade distribution | Authenticated |
+| GET    | `/api/grades/stats/courses`       | Average score per course                 | Authenticated |
 
 ### AI Assistant
 
@@ -330,42 +410,6 @@ Set these in **Settings > Secrets and variables > Actions**:
 5. **CloudFront** — Create a distribution pointing to the S3 bucket; configure the default root object as `index.html` and add a custom error page (403/404 → `index.html`, 200) for SPA routing.
 6. **GitHub Secrets** — Populate all secrets listed above.
 7. Push to `main` — the deploy workflow runs automatically.
-
----
-
-## Project Structure
-
-```
-student-tracking-system/
-├── .github/
-│   └── workflows/
-│       ├── ci.yml              # Continuous integration
-│       └── deploy.yml          # AWS deployment
-├── backend/
-│   ├── src/
-│   │   ├── main/
-│   │   │   ├── java/           # Spring Boot source
-│   │   │   └── resources/
-│   │   │       ├── application.yml
-│   │   │       └── application-dev.yml
-│   │   └── test/               # JUnit / Testcontainers tests
-│   ├── Dockerfile
-│   └── pom.xml
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   ├── services/           # Axios API calls
-│   │   └── main.jsx
-│   ├── Dockerfile
-│   ├── nginx.conf
-│   └── vite.config.js
-├── docker-compose.yml          # Local development stack
-├── docker-compose.prod.yml     # Production overrides
-├── .env.example                # Environment variable template
-├── .gitignore
-└── README.md
-```
 
 ---
 
