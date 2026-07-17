@@ -10,7 +10,7 @@
 
 A full-stack academic platform that enables teachers to record and manage student grades, generate reports, and gives students secure access to their own academic records. It also ships with a conversational AI assistant (Spring AI + Anthropic Claude) with per-conversation memory. Built with a production-grade CI/CD pipeline deploying to AWS.
 
-**Live Demo:** [https://student-tracking-system.example.com](https://student-tracking-system.example.com) _(placeholder — replace with your deployed URL)_
+**Live Demo:** [https://student-tracking-system.example.com](https://student-tracking-system.example.com) _(placeholder — I will update it when I finish it)_
 
 ---
 
