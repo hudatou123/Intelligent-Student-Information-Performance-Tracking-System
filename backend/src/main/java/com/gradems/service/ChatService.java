@@ -14,7 +14,7 @@ import java.util.UUID;
  *
  * <p>While no real API key is configured, this returns a canned response instead of calling the
  * model, so the whole request/response flow can be tested without credentials. As soon as a real
- * {@code sk-ant-...} key is set, the real model is used automatically — no code change required.
+ * Google API key is set, the real model is used automatically — no code change required.
  */
 @Service
 @Slf4j
@@ -24,9 +24,9 @@ public class ChatService {
     private final boolean aiEnabled;
 
     public ChatService(AiChatClient aiChatClient,
-                       @Value("${spring.ai.anthropic.api-key:}") String apiKey) {
+                       @Value("${spring.ai.openai.api-key:}") String apiKey) {
         this.aiChatClient = aiChatClient;
-        this.aiEnabled = apiKey != null && apiKey.startsWith("sk-ant-");
+        this.aiEnabled = apiKey != null && !apiKey.isBlank() && !apiKey.startsWith("placeholder");
     }
 
     public ChatResponse chat(ChatRequest request) {
@@ -36,10 +36,10 @@ public class ChatService {
 
         if (!aiEnabled) {
             log.warn("AI chat invoked without a real API key; returning a stub response. "
-                    + "Set ANTHROPIC_API_KEY to a real key to enable live responses.");
+                    + "Set GOOGLE_API_KEY to a real key to enable live responses.");
             return new ChatResponse(conversationId,
-                    "[AI not configured] This is a placeholder response. Set a real ANTHROPIC_API_KEY "
-                            + "(starting with \"sk-ant-\") and restart to get live answers. "
+                    "[AI not configured] This is a placeholder response. Set a real GOOGLE_API_KEY "
+                            + "and restart to get live answers. "
                             + "You said: \"" + request.message() + "\"");
         }
 

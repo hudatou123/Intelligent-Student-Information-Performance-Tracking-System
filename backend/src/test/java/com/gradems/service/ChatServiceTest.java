@@ -23,7 +23,7 @@ class ChatServiceTest {
     @DisplayName("chat - placeholder key returns stub response without calling the model")
     void chat_withPlaceholderKey_returnsStubAndSkipsModel() {
         // Arrange
-        ChatService service = serviceWithKey("placeholder-set-a-real-sk-ant-key");
+        ChatService service = serviceWithKey("placeholder-set-a-real-google-api-key");
 
         // Act
         ChatResponse response = service.chat(new ChatRequest("hello", null));
@@ -38,7 +38,7 @@ class ChatServiceTest {
     @DisplayName("chat - real key delegates to the AI client and returns its reply")
     void chat_withRealKey_callsAiClient() {
         // Arrange
-        ChatService service = serviceWithKey("sk-ant-test-key");
+        ChatService service = serviceWithKey("AIza-test-key");
         when(aiChatClient.reply(eq("conv-1"), eq("hello"))).thenReturn("Hi there!");
 
         // Act
@@ -54,7 +54,7 @@ class ChatServiceTest {
     @DisplayName("chat - generates a new conversationId when none is provided")
     void chat_withoutConversationId_generatesNewId() {
         // Arrange
-        ChatService service = serviceWithKey("sk-ant-test-key");
+        ChatService service = serviceWithKey("AIza-test-key");
         when(aiChatClient.reply(anyString(), eq("hello"))).thenReturn("reply");
 
         // Act
@@ -69,7 +69,7 @@ class ChatServiceTest {
     @DisplayName("chat - preserves a provided conversationId")
     void chat_withConversationId_preservesIt() {
         // Arrange
-        ChatService service = serviceWithKey("sk-ant-test-key");
+        ChatService service = serviceWithKey("AIza-test-key");
         when(aiChatClient.reply(anyString(), anyString())).thenReturn("reply");
 
         // Act

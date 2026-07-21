@@ -89,10 +89,10 @@
             <version>${springdoc.version}</version>
         </dependency>
 
-        <!-- Spring AI: Anthropic (Claude) chat model + Spring Boot auto-configuration -->
+        <!-- Spring AI: OpenAI-compatible chat model, pointed at Google's Gemini API -->
         <dependency>
             <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-starter-model-anthropic</artifactId>
+            <artifactId>spring-ai-starter-model-openai</artifactId>
         </dependency>
 
         <!-- JJWT API -->

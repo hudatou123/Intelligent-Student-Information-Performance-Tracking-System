@@ -6,9 +6,9 @@
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=flat&logo=docker&logoColor=white)
 ![AWS](https://img.shields.io/badge/AWS-EC2%20%7C%20S3%20%7C%20ECR-FF9900?style=flat&logo=amazon-aws&logoColor=white)
 ![CI](https://img.shields.io/badge/CI-GitHub_Actions-2088FF?style=flat&logo=github-actions&logoColor=white)
-![AI](https://img.shields.io/badge/AI-Spring_AI%20%7C%20Claude-6DB33F?style=flat&logo=spring&logoColor=white)
+![AI](https://img.shields.io/badge/AI-Spring_AI%20%7C%20Gemini-6DB33F?style=flat&logo=spring&logoColor=white)
 
-A full-stack academic platform that enables teachers to record and manage student grades, generate reports, and gives students secure access to their own academic records. It also ships with a conversational AI assistant (Spring AI + Anthropic Claude) with per-conversation memory. Built with a production-grade CI/CD pipeline deploying to AWS.
+A full-stack academic platform that enables teachers to record and manage student grades, generate reports, and gives students secure access to their own academic records. It also ships with a conversational AI assistant (Spring AI + Google Gemini) with per-conversation memory. Built with a production-grade CI/CD pipeline deploying to AWS.
 
 **Live Demo:** [https://student-tracking-system.example.com](https://student-tracking-system.example.com) _(placeholder — I will update it when I finish it)_
 
@@ -80,7 +80,7 @@ student-tracking-system/
       │                                   └─ SpringAiChatClient
       ▼                                        └─ Spring AI ChatClient
   PostgreSQL 16  (Flyway-managed schema)            ├─ MessageWindowChatMemory (per conversationId)
-                                                    └─ Anthropic Claude Messages API
+                                                    └─ Google Gemini API (OpenAI-compatible)
 ```
 
 ### Local development (Docker Compose)
@@ -123,9 +123,9 @@ student-tracking-system/
                                                             │ HTTPS (Spring AI)
                                                             ▼
                                                 ┌───────────────────────┐
-                                                │  Anthropic Claude API │
+                                                │   Google Gemini API   │
                                                 │  external LLM service │
-                                                │  (claude-haiku-4-5)   │
+                                                │ (gemini-3.5-flash-lite)│
                                                 └───────────────────────┘
 ```
 
@@ -140,7 +140,7 @@ student-tracking-system/
 | Database   | PostgreSQL 16, Spring Data JPA / Hibernate, Flyway migrations         |
 | Auth       | Spring Security, JWT (JJWT, HMAC-SHA256), BCrypt, role-based access    |
 | API Docs   | SpringDoc OpenAPI (Swagger UI)                                        |
-| AI         | Spring AI 1.0, Anthropic Claude (`claude-haiku-4-5`)                  |
+| AI         | Spring AI 1.0, Google Gemini (`gemini-3.5-flash-lite`)               |
 | Container  | Docker, Docker Compose                                                |
 | CI/CD      | GitHub Actions                                                        |
 | Cloud      | AWS EC2, S3, CloudFront, ECR, RDS                                     |
@@ -196,7 +196,7 @@ export SPRING_DATASOURCE_PASSWORD=student_tracking_dev_password
 export JWT_SECRET=dev-secret-key-at-least-256-bits-long-for-hmac
 
 # Optional: enable the AI assistant (omit to use the placeholder stub)
-export ANTHROPIC_API_KEY=sk-ant-your-key
+export GOOGLE_API_KEY=your-google-ai-studio-key
 
 ./mvnw spring-boot:run
 # API available at http://localhost:8080
@@ -287,24 +287,26 @@ Request body: `{ "message": "...", "conversationId": "optional-id" }`. The respo
 ## AI Assistant
 
 The backend ships with a conversational AI assistant (`POST /api/chat`) built on
-[Spring AI](https://docs.spring.io/spring-ai/reference/) using the Anthropic Claude model, with
-per-conversation chat memory.
+[Spring AI](https://docs.spring.io/spring-ai/reference/) using Google's Gemini model, with
+per-conversation chat memory. Spring AI's OpenAI client talks to the Gemini
+[OpenAI-compatible endpoint](https://ai.google.dev/gemini-api/docs/openai), so only a Google AI
+Studio API key is needed — no GCP project or service account.
 
 It runs in one of two modes, selected automatically by whether a valid API key is present:
 
 - **Placeholder mode (default):** with no real key configured, `/api/chat` returns a canned
   stub response, so the feature can be exercised end-to-end without any credentials.
-- **Live mode:** set `ANTHROPIC_API_KEY` to a real key (starting with `sk-ant-`) and restart —
-  the assistant then calls Claude. No code changes are required.
+- **Live mode:** set `GOOGLE_API_KEY` to a real key and restart — the assistant then calls
+  Gemini. No code changes are required.
 
 ```bash
 # Enable live mode locally
-echo "ANTHROPIC_API_KEY=sk-ant-your-key" >> .env
+echo "GOOGLE_API_KEY=your-google-ai-studio-key" >> .env
 docker compose up --build -d
 ```
 
-Get a key from the [Anthropic Console](https://console.anthropic.com) — this is separate from a
-Claude.ai subscription. Never commit your real key; `.env` is git-ignored.
+Get a key from [Google AI Studio](https://aistudio.google.com/apikey). Never commit your real
+key; `.env` is git-ignored.
 
 ### Framework Choice: Spring AI vs LangChain4j
 
@@ -312,7 +314,8 @@ The assistant uses **Spring AI** (the official Spring project, 1.0.0 GA) rather 
 For a Spring Boot codebase, Spring AI integrates natively — auto-configured `ChatClient`/`ChatModel`
 beans, standard `spring.ai.*` properties, a first-class `VectorStore` abstraction (`PgVectorStore`)
 for the planned RAG work, and `Advisor`-based chat memory and retrieval — keeping the whole stack on
-one coherent, well-supported ecosystem.
+one coherent, well-supported ecosystem. Swapping the model provider (here, Anthropic → Google
+Gemini) is just a dependency and config change; the application code is unchanged.
 
 LangChain4j was evaluated first and is equally capable; the original LangChain4j implementation of
 this feature is preserved on the [`phase1-langchain4j`](../../tree/phase1-langchain4j) branch for
@@ -331,8 +334,8 @@ Copy `.env.example` to `.env` and fill in real values before deploying.
 | `DB_USERNAME`              | PostgreSQL username                           | Yes       |
 | `DB_PASSWORD`              | PostgreSQL password                           | Yes       |
 | `JWT_SECRET`               | HMAC secret, minimum 256 bits                 | Yes       |
-| `ANTHROPIC_API_KEY`        | Anthropic key (`sk-ant-...`) for the AI assistant; blank = placeholder stub | No |
-| `ANTHROPIC_MODEL`          | Claude model id (default `claude-haiku-4-5-20251001`) | No |
+| `GOOGLE_API_KEY`           | Google AI Studio key for the AI assistant; blank = placeholder stub | No |
+| `GEMINI_MODEL`             | Gemini model id (default `gemini-3.5-flash-lite`) | No |
 | `AWS_REGION`               | AWS region (e.g. `us-east-1`)                 | Yes (AWS) |
 | `AWS_ACCESS_KEY_ID`        | AWS access key for CLI operations             | Yes (AWS) |
 | `AWS_SECRET_ACCESS_KEY`    | AWS secret access key                         | Yes (AWS) |

@@ -11,10 +11,11 @@ import org.springframework.context.annotation.Configuration;
  * Wires the Spring AI building blocks: a windowed {@link ChatMemory} and a {@link ChatClient}
  * preconfigured with a default system prompt and a memory advisor.
  *
- * <p>The underlying Anthropic {@code ChatModel} and {@code ChatClient.Builder} are
- * auto-configured by {@code spring-ai-starter-model-anthropic} from the {@code spring.ai.anthropic.*}
- * properties. No network call happens at construction time, and {@code ChatService} only invokes
- * the model when a real API key is configured.
+ * <p>The underlying {@code ChatModel} and {@code ChatClient.Builder} are auto-configured by
+ * {@code spring-ai-starter-model-openai} from the {@code spring.ai.openai.*} properties, which
+ * point at Google's Gemini API via its OpenAI-compatible endpoint. No network call happens at
+ * construction time, and {@code ChatService} only invokes the model when a real API key is
+ * configured.
  */
 @Configuration
 public class AiConfig {
