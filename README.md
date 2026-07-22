@@ -157,8 +157,8 @@ student-tracking-system/
 ### Run the full stack in one command
 
 ```bash
-git clone https://github.com/your-username/student-tracking-system.git
-cd student-tracking-system
+git clone https://github.com/hudatou123/Intelligent-Student-Information-Performance-Tracking-System.git
+cd Intelligent-Student-Information-Performance-Tracking-System
 docker compose up --build
 ```
 
@@ -318,9 +318,9 @@ one coherent, well-supported ecosystem. Swapping the model provider (here, Anthr
 Gemini) is just a dependency and config change; the application code is unchanged.
 
 LangChain4j was evaluated first and is equally capable; the original LangChain4j implementation of
-this feature is preserved on the [`phase1-langchain4j`](../../tree/phase1-langchain4j) branch for
-comparison. The framework is isolated behind a small `AiChatClient` interface, so swapping providers
-touches a single implementation class.
+this feature is preserved for comparison at commit
+[`9dbf9f4`](../../tree/9dbf9f4). The framework is isolated behind a small `AiChatClient` interface,
+so swapping providers touches a single implementation class.
 
 ---
 
