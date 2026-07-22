@@ -4,6 +4,7 @@ import {
   Users,
   GraduationCap,
   BookOpen,
+  Bot,
   LogOut,
   ChevronLeft,
   Award,
@@ -43,6 +44,12 @@ const NAV_ITEMS: NavItem[] = [
     label: 'Grades',
     path: '/grades',
     icon: BookOpen,
+    roles: ['ADMIN', 'TEACHER', 'STUDENT'],
+  },
+  {
+    label: 'AI Assistant',
+    path: '/ai-assistant',
+    icon: Bot,
     roles: ['ADMIN', 'TEACHER', 'STUDENT'],
   },
 ]

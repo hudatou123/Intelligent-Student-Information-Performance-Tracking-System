@@ -6,6 +6,7 @@ import Dashboard from '@/pages/Dashboard'
 import Students from '@/pages/Students'
 import Teachers from '@/pages/Teachers'
 import Grades from '@/pages/Grades'
+import AiAssistant from '@/pages/AiAssistant'
 import NotFound from '@/pages/NotFound'
 
 export const router = createBrowserRouter([
@@ -48,6 +49,10 @@ export const router = createBrowserRouter([
       {
         path: 'grades',
         element: <Grades />,
+      },
+      {
+        path: 'ai-assistant',
+        element: <AiAssistant />,
       },
     ],
   },

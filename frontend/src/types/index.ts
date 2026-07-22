@@ -82,3 +82,8 @@ export interface DashboardStats {
   totalGrades: number
   averageScore: number
 }
+
+export interface ChatResponse {
+  conversationId: string
+  reply: string
+}
